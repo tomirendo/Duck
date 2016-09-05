@@ -611,6 +611,9 @@ void sine(double frequency, int steps, double voltage_per_second){
               Serial.println(real_freq);
             } 
 
+          } else if (update.startsWith("STOP")) {
+              digitalWrite(14,HIGH);
+              return ; 
           }
         
         }
