@@ -4,6 +4,8 @@
 #include "SPI.h" // necessary library for SPI communication
 #include <vector>
 #include "math.h"
+#include <Wire.h>
+
 //#include "WaveTable.hpp"
 
 #define SECONDS_IN_MILISECOND 0.001
@@ -108,6 +110,9 @@ void setup()
   //Yotam debug led
   pinMode(14, OUTPUT);
   digitalWrite(14, HIGH); 
+
+  //Display I2C communication
+  Wire.begin();
 }
 
 void blinker(int s){
@@ -514,7 +519,19 @@ double voltage_step(double voltage_per_second, int steps, double freq){
 double radian_per_step(int steps){
   return 2*3.1415926 / steps;
 }
+void write_to_display(String s){
+  Wire.beginTransmission(8);
+  char buffer[100];
+  (s+"\r").toCharArray(buffer, 100);
+  Wire.write(buffer);
+  Wire.endTransmission();
+}
+void update_display_with_sine(double freq, int steps, double v_p_s){
 
+  String temp_str = "S," + String(freq)+","+String(steps)+","+
+         String(v_p_s);
+  write_to_display(temp_str);
+}
 void sine(double frequency, int steps, double voltage_per_second){
     //Yotam
     //Runs sine function with initial amplitude and DC current (mid).
@@ -530,6 +547,7 @@ void sine(double frequency, int steps, double voltage_per_second){
 
     Serial.print("Sine with read is running real freq : ");
     Serial.println(real_freq);
+    update_display_with_sine(real_freq, steps, voltage_per_second);
     double current_radian = 0;
     int timer;
     double sine_value, value_to_reference;
@@ -580,18 +598,23 @@ void sine(double frequency, int steps, double voltage_per_second){
 
             sets the DC value of port 2 to -3.4
           */
-          update = update.substring(0, update.indexOf(':'));
           if ((command == "DC") || (command == "AC")){
               int port =  update.substring(update.indexOf(':')+1).toInt();
+              update = update.substring(0, update.indexOf(':'));
 
           if (command == "DC") {
-            if (abs(target_dc[port])+ abs(amp[port]) <= 10){
+            if (abs(update.toFloat())+ abs(amp[port]) <= 10){
               target_dc[port] = update.toFloat();
+              String temp_str = "P," + String(port)+",DC,"+String(target_dc[port]);
+              write_to_display(temp_str);
             }
 
           } else if (command == "AC"){
             if (abs(update.toFloat()) + abs(mid[port]) <= 10){
                 amp[port] = update.toFloat();
+                float rms_value = amp[port] / 1.414213562;
+                String temp_str = "P," + String(port)+",AC,"+String(rms_value);
+                write_to_display(temp_str);
             }
           }
           } else if (update.startsWith("SINE,")){
@@ -607,6 +630,7 @@ void sine(double frequency, int steps, double voltage_per_second){
               real_freq = round_freq(steps, waiting_time);
               single_step_rad = radian_per_step(steps);
 
+              update_display_with_sine(real_freq, steps, voltage_per_second);
               Serial.print("Sine with read is running real freq : ");
               Serial.println(real_freq);
             } 
@@ -614,6 +638,15 @@ void sine(double frequency, int steps, double voltage_per_second){
           } else if (update.startsWith("STOPSINE")) {
               digitalWrite(14,HIGH);
               return ; 
+          } else if (update.startsWith("ADC,")){
+            /*
+              WASNT TESTED
+              Returns Reads DC and return the value through the Serial port.
+            */
+            std::vector<String> v;
+            v = split_string_by_comma(update.substring(4));
+            readADC(v[0].toInt());
+
           }
         
         }
