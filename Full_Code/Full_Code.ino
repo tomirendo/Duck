@@ -637,6 +637,8 @@ void sine(double frequency, int steps, double voltage_per_second){
 
           } else if (update.startsWith("STOPSINE")) {
               digitalWrite(14,HIGH);
+              write_to_display(String("D,1"));
+              //This is a bug, the command should be 'D' without anything else. 
               return ; 
           } else if (update.startsWith("ADC,")){
             /*
