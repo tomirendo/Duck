@@ -21,9 +21,9 @@ int drdy=48; // Data is ready pin on ADC
 int led = 32;
 int data=28;//Used for trouble shooting; connect an LED between pin 13 and GND
 int err=30;
-const int Noperations = 12;
+const int Noperations = 13;
 //hwm::WaveTable table(1024);
-String operations[Noperations] = {"NOP", "SET", "GET_ADC", "RAMP1", "RAMP2", "BUFFER_RAMP", "RESET", "TALK", "CONVERT_TIME", "*IDN?", "*RDY?", "SINE"};
+String operations[Noperations] = {"NOP", "SET", "GET_ADC", "RAMP1", "RAMP2", "BUFFER_RAMP", "RESET", "TALK", "CONVERT_TIME", "*IDN?", "*RDY?", "SINE", "FAST_READ"};
 
 namespace std {
   void __throw_bad_alloc()
@@ -186,7 +186,23 @@ std::vector<int> listOfChannels(byte DB) // Returns the list of channels to writ
 
 void writeADCConversionTime(std::vector<String> DB)
 {
-  int adcChannel=DB[1].toInt();
+  int adcChannel;
+    switch (DB[1].toInt()){
+      case 0:
+      adcChannel = 1;
+      break;
+      case 1:
+      adcChannel = 3;
+      break;
+      case 2:
+      adcChannel = 0;
+      break;
+      case 3:
+      adcChannel = 2;
+      break;
+    }
+
+  
   byte cr;
 
   byte fw = ((byte)((DB[2].toInt()*6.144-249)/128))|128;
@@ -750,7 +766,22 @@ void autoRamp2(std::vector<String> DB)
 //  digitalWrite(led,LOW);
 //}
 
+void fast_read(int port, int length, int delay){
+  float data[length];
+  int timer;
+  for (int i = 0 ; i < length; i++){
+      timer= micros();
+      data[i] = readADCWithoutPrint(port);
+      while(micros() <= timer + delay);
+  }
+  
+  for (int i = 0 ; i < length; i++){
+    Serial.println(data[i]);
+  }
+  
+  Serial.println("FAST_READ_FINISHED");
 
+}
 
 
 
@@ -823,11 +854,13 @@ void router(std::vector<String> DB)
     RDY();
     break;
           
-      case 11:
-          //Two parameters are not required
-          sine(DB[1].toFloat(), DB[2].toFloat(), DB[3].toFloat());
-          break;
+    case 11:
+    sine(DB[1].toFloat(), DB[2].toFloat(), DB[3].toFloat());
+    break;
 
+    case 12 :
+    fast_read(DB[1].toInt(), DB[2].toInt(), DB[3].toInt());
+    break;
     default:
     break;
   }
