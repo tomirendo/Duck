@@ -32,6 +32,15 @@ class Duck:
     def run(self, op = "NOP", verbose = False, read = True):
         run_operation(self.serial_device, op, verbose, read)
 
+    def buffer_ramp(self, dac_channel, adc_channel,
+                begin_voltage, end_voltage, number_of_steps, 
+                delay_in_microsecs):
+        return _buffer_ramp(self.serial_device, dac_channel, adc_channel, 
+            begin_voltage, end_voltage, number_of_steps, 
+            delay_in_microsecs)
+
+
+
 
 def run_without_read(serial_device, op = "NOP", ver = False):
     if isinstance(op, str):
@@ -73,7 +82,7 @@ def buffer_sine(serial_device, dac_channel, adc_channel, mid_voltage,
     df = DataFrame(result_as_list, index = arange(0, len(data)) * waiting_time)
     return df
 
-def buffer_ramp(serial_device, dac_channel, adc_channel,
+def _buffer_ramp(serial_device, dac_channel, adc_channel,
                 begin_voltage, end_voltage, number_of_steps, 
                 delay_in_microsecs):
     """

@@ -129,3 +129,11 @@ Sets the DC voltage on port number 2 to $-9 \ volt$
 	sweep duck.AC2DC -9 9 100
 
 sweeps from -9 to 9 volt in 100 steps on port number 2.
+
+
+
+### ADC results
+
+Using both "CONVERT\_TIME" and "FAST\_READ" the Duck can read up signals up to 500 Hz. Using the fastes delay (82 for measure, 82//3 for read).
+
+The convert time documentation is wrong and should include a second parameter for port number, the actual code doens't replace the real port.
