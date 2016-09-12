@@ -768,15 +768,18 @@ void autoRamp2(std::vector<String> DB)
 
 void fast_read(int port, int length, int delay){
   float data[length];
+  int timestamp[length];
   int timer;
   for (int i = 0 ; i < length; i++){
       timer= micros();
       data[i] = readADCWithoutPrint(port);
+      timestamp[i] = micros();
       while(micros() <= timer + delay);
   }
   
   for (int i = 0 ; i < length; i++){
     Serial.println(data[i]);
+    Serial.println(timestamp[i]);
   }
   
   Serial.println("FAST_READ_FINISHED");
