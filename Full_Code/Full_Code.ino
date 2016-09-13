@@ -665,7 +665,7 @@ void sine(double frequency, int steps, double voltage_per_second){
               WASNT TESTED
               Returns Reads DC and return the value through the Serial port.
             */
-              int begin_index = (index > adc_read_length / 2) 0 ? (adc_read_length/2 -1) 
+              int begin_index = (index > adc_read_length / 2) 0 ? (adc_read_length/2) 
               int end_index = begin_index + adc_read_length / 2;
               for (int i = begin_index; i < end_index; ++i){
                 Serial.println(adc_data[i]);
