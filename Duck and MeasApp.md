@@ -76,16 +76,17 @@ Make sure when you do anything in AC+DC mode, not to have any duck.ADC* on your 
 Signature:
 
 
-	set duck.AC {Frequency} {points on graph}
+	set duck.AC {Frequency} {Points on graph} {Ramp pace}
 
 * Frequency - in Hz
 * Points on graph - number of voltage points the DAC will actually produce. More points will produce a more precise signal.
+* Ramp Pace - Pace of DC voltage change in Volts per Seconds (AC changes will happen immediately).
 
 ##### Examples:
 	
-	set duck.AC 17 80
+	set duck.AC 17 80 0.5
 
-runs AC+DC with frquency of 17Hz and 80 points on the graph. The default values of the AC and DC are 0 (more details are below).
+runs AC+DC with frquency of 17Hz and 80 points on the graph. The default values of the AC and DC are 0 (more details are below). Changes to the DC values on any chan
 
 ## Update AC,DC on a running AC+DC signal
 
