@@ -612,10 +612,8 @@ void sine(double frequency, int steps, double voltage_per_second){
           /*
             Command syntax is:
               COMMAND value:port
-
             for example :
               DC -3.4:2
-
             sets the DC value of port 2 to -3.4
           */
           if ((command == "DC") || (command == "AC")){
@@ -725,7 +723,6 @@ void sine_buffer(int dac_channel, int adc_channel, float mid, float amp, float f
     //Yotam
     /*
      Just like Sine, but running n times and reading along.
-
      
      */
     int waiting_time = (1/(steps*frequency))*MICROSECONDS_IN_SECOND;
@@ -947,5 +944,3 @@ void loop()
   router(comm);
   }
 }
-
-

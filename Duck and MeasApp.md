@@ -76,16 +76,17 @@ Make sure when you do anything in AC+DC mode, not to have any duck.ADC* on your 
 Signature:
 
 
-	set duck.AC {Frequency} {points on graph}
+	set duck.AC {Frequency} {Points on graph} {Ramp pace}
 
 * Frequency - in Hz
 * Points on graph - number of voltage points the DAC will actually produce. More points will produce a more precise signal.
+* Ramp Pace - Pace of DC voltage change in Volts per Seconds (AC changes will happen immediately).
 
 ##### Examples:
 	
-	set duck.AC 17 80
+	set duck.AC 17 80 0.5
 
-runs AC+DC with frquency of 17Hz and 80 points on the graph. The default values of the AC and DC are 0 (more details are below).
+runs AC+DC with frquency of 17Hz and 80 points on the graph and ramp speed of 0.5 volts per second. The default values of the AC and DC are 0 (more details are below). 
 
 ## Update AC,DC on a running AC+DC signal
 
@@ -97,7 +98,6 @@ Updates the AC voltage of the a port.
 signature:
 
 	set duck.AC{port}AC {voltage}
-	sweep duck.AC{port}AC {begin_voltage} {end_voltage} {steps}
 
 * Port - port to update
 * Voltage - The AC voltage in RMS on the current AC+DC port
@@ -134,6 +134,6 @@ sweeps from -9 to 9 volt in 100 steps on port number 2.
 
 ### ADC results
 
-Using both "CONVERT\_TIME" and "FAST\_READ" the Duck can read up signals up to 500 Hz. Using the fastes delay (82 for measure, 82//3 for read).
+Using both "CONVERT\_TIME" and "FAST\_READ" the Duck can read signals up to 500 Hz. Using the fastes delay (82 for measure, 82*2 for read).
 
 The convert time documentation is wrong and should include a second parameter for port number, the actual code doens't replace the real port.

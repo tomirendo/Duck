@@ -68,16 +68,12 @@ After the initial connection to the device, the Duck sends a single '\n' that sh
 ## Sine
 Command signature:
 
-	SINE,{DAC_CHANNEL},{DC_VOLTAGE},{AC_AMPLITUDE},{FREQUENCY},{POINTS_ON_GRAPH}\r
+	SINE,{FREQUENCY},{POINTS_ON_GRAPH},{RAMP_PACE}\r
 
-* DAC_CHANNEL - Output channel. In addition to the requested channel, the same signal would come out of channel 3 as reference channel. The AC current of the reference channel can be changed using the RF command (more details below).
-* DC_VOLTAGE - The initial DC voltage out of the output channel. This doesn't affect the reference port.
-* AC_AMPLITUDE - The initial AC voltage amplitude out of both the output channel and the reference channel.
 * FREQUENCY -  The frequency of the AC signal in Hz
 * POINTS_ON_GRAPH - The amount of data point the arduino will draw to simulate an AC current. More points would amount to a clearer signal. Too many point would slow the process down and result in a lower frequency.
+* RAMP_PACE - Pace of updating the DC voltage on a port measured in Volts per Seconds.
 
-The calculation of the amplitude at a given point is:
-$A_{mp} = (DC\ VOLTAGE)+sin(2\cdot \pi \cdot step / (POINTS\ ON\ GRAPH)) \cdot (AC\ AMPLITUDE)$
 #### Output 
 The command outputs:
 
@@ -87,56 +83,49 @@ Ending with a line break. {real_freq} is replace with the real expected frequenc
 
 #### Example 
 
-    SINE,2,1,0.03,17,80\r
+    SINE,17,80,0.5\r
 
-Would produce a DC voltage of $1 \ volt$ on port 2, with additional AC current with amplitude $30 \ milivolt$ using 80 points on the graph on both port 2 and port 3 (reference).
+Begin SINE state with 17 Hz frequency with 80 points on the graph and ramp pace of 0.5 Volts per second.
 
 ### The SINE state
-The SINE command differs from other DAC-ADC command in that it never stops. You can only use a small set of commands to update the SINE signal that runs on the selected port. In order to change the status of the device (to produce a RAMP or even a different SINE signal) the Duck should be restarted (In matlab, simply using fclose(serial_device) and the fopen(serial_device)).
+The SINE command differs from other DAC-ADC command in that it doesn't stops. You can only use a small set of commands to update the SINE signal that runs on the selected port. To end the SINE state, you should use the STOPSINE command. the SINE state can be updated with the regular sine command.
 
-There are some accepted command during the SINE state, that can affect the reference, AC or DC voltages. 
+There are command during the SINE state, that can affect the reference, AC or DC voltages. 
+
+#### STOPSINE
+
+Signature:
+
+    STOPSINE\r
+
+Stops the SINE mode. All of the Duck ports will produce DC current with the last value (AC+DC) calculated. 
 
 #### AC
 Signature :
     
-    AC {voltage}\r
+    AC {voltage}:{port}\r
 
-Updates the AC voltage amplitude of the output channel to the {voltage} specified(and only the output channel. this doesn't affect the reference channel). 
+Updates the AC voltage amplitude of the output channel to the {voltage} specified on port number {port}.
 
 Example :
     
-    AC 0.03\r
+    AC 0.03:2\r
 
-Updates the voltage amplitude of the output channel to $30 \ milivolt$. This doesn't affect the reference channel amplitude.
+Updates the voltage amplitude on port 2 to $30 \ milivolt$.
 
 #### DC
 
 Signature :
     
-    DC {voltage}\r
+    DC {voltage}:{port}\r
 
-Updates the DC voltage of the output channel to the {voltage} specified(and only the output channel. this doesn't affect the reference channel). 
+Updates the DC voltage of port number {port} to the {voltage} specified.
 
 Example :   
 
-    DC 3.2\r
+    DC 1:3\r
 
-Updates the DC voltage of the output channel to $3.2 \ volt$. This doesn't affect the reference channel.
-
-#### RF
-
-Signature:
-    
-    RF {voltage}\r
-
-Updates the AC voltage amplitude of the reference channel (3). This doesn't affect the output channel in any way.
-
-
-Example :
-    
-    RF 1\r
-
-Sets the output voltage of the reference channel to $1 \ volt$. This doesn't affect the output channel.
+Updates the DC voltage on port number 3 to $1 \ volt$.
 
 ### To do
 * Stop sine
