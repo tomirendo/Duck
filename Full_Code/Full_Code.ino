@@ -579,7 +579,7 @@ void sine(double frequency, int steps, double voltage_per_second){
     //Yotam Debug Pin
     digitalWrite(14, LOW);
 
-    const int adc_read_length 1000;
+    const int adc_read_length=1000;
     int adc_read_index = 0;
     float adc_data[adc_read_length];
     int adc_timestamp[adc_read_length];
@@ -659,12 +659,14 @@ void sine(double frequency, int steps, double voltage_per_second){
               //This is a bug, the command should be 'D' without anything else. 
               return ; 
           } else if (update.startsWith("READ")){
-            /*
-              WASNT TESTED
-              Returns Reads DC and return the value through the Serial port.
-            */
-              int begin_index = (index > adc_read_length / 2) 0 ? (adc_read_length/2) 
+              int begin_index ;
+              if (adc_read_index > (adc_read_length / 2)){
+                begin_index = 0;
+              } else {
+                begin_index = adc_read_length/2;
+              }
               int end_index = begin_index + adc_read_length / 2;
+
               for (int i = begin_index; i < end_index; ++i){
                 Serial.println(adc_data[i]);
                 Serial.println(adc_timestamp[i]);
