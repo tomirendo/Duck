@@ -75,6 +75,13 @@ void debug()
   delay(3000);
 }
 
+void restart_display(){
+  pinMode(18, OUTPUT);
+  digitalWrite(18, LOW);
+  delay(10);
+  digitalWrite(18, HIGH);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -110,6 +117,8 @@ void setup()
   //Yotam debug led
   pinMode(14, OUTPUT);
   digitalWrite(14, HIGH); 
+
+  restart_display();
 
   //Display I2C communication
   Wire.begin();
@@ -570,6 +579,7 @@ void sine(double frequency, int steps, double voltage_per_second){
 
     //Steps to new DC
     double target_dc[] = {0,0,0,0};
+    int is_port_updating[] = {0,0,0,0};
     
     //Online updates
     String update, command;
@@ -619,6 +629,7 @@ void sine(double frequency, int steps, double voltage_per_second){
           if (command == "DC") {
             if (abs(update.toFloat())+ abs(amp[port]) <= 10){
               target_dc[port] = update.toFloat();
+              is_port_updating[port] = 1;
               String temp_str = "P," + String(port)+",DC,"+String(target_dc[port]);
               write_to_display(temp_str);
             }
@@ -685,6 +696,11 @@ void sine(double frequency, int steps, double voltage_per_second){
           }
         } else {
           mid[i] = target_dc[i];
+          if (is_port_updating[i]){
+            is_port_updating[i] = 0;
+            String temp_str = "P," + String(i)+",DN,"+String(mid[i]);
+            write_to_display(temp_str);
+          }
         }
         curr_value = sine_value*amp[i] + mid[i]; 
         if (curr_value != prev_value[i]){
@@ -817,8 +833,6 @@ void fast_read(int port, int length, int delay){
   Serial.println("FAST_READ_FINISHED");
 
 }
-
-
 
 void router(std::vector<String> DB)
 {
