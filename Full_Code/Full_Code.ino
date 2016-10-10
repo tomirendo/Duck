@@ -629,9 +629,11 @@ void sine(double frequency, int steps, double voltage_per_second){
           if (command == "DC") {
             if (abs(update.toFloat())+ abs(amp[port]) <= 10){
               target_dc[port] = update.toFloat();
-              is_port_updating[port] = 1;
-              String temp_str = "P," + String(port)+",DC,"+String(target_dc[port]);
-              write_to_display(temp_str);
+              if (target_dc[port] != mid[port]){
+                  is_port_updating[port] = 1;
+                  String temp_str = "P," + String(port)+",DC,"+String(target_dc[port]);
+                  write_to_display(temp_str);
+              } 
             }
 
           } else if (command == "AC"){
