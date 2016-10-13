@@ -577,7 +577,7 @@ void update_display_with_sine(double freq, int steps, double v_p_s){
 }
 
 int should_restart(){
-    return (has_restart_button &&  (digitalRead(goto_zero_input_pin) == HIGH))
+    return (has_restart_button &&  (digitalRead(goto_zero_input_pin) == HIGH));
 }
 
 void sine(double frequency, int steps, double voltage_per_second){
