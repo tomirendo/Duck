@@ -23,6 +23,10 @@ int drdy=48; // Data is ready pin on ADC
 int led = 32;
 int data=28;//Used for trouble shooting; connect an LED between pin 13 and GND
 int err=30;
+
+int goto_zero_high_pin = 9;
+int goto_zero_input_pin = 8;
+
 const int Noperations = 13;
 //hwm::WaveTable table(1024);
 String operations[Noperations] = {"NOP", "SET", "GET_ADC", "RAMP1", "RAMP2", "BUFFER_RAMP", "RESET", "TALK", "CONVERT_TIME", "*IDN?", "*RDY?", "SINE", "FAST_READ"};
@@ -75,6 +79,13 @@ void debug()
   delay(3000);
 }
 
+void restart_display(){
+  pinMode(18, OUTPUT);
+  digitalWrite(18, LOW);
+  delay(10);
+  digitalWrite(18, HIGH);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -111,8 +122,16 @@ void setup()
   pinMode(14, OUTPUT);
   digitalWrite(14, HIGH); 
 
+  restart_display();
+
   //Display I2C communication
   Wire.begin();
+
+  //Set goto zero pins
+  pinMode(goto_zero_high_pin, OUTPUT);
+  pinMode(goto_zero_input_pin, INPUT);
+  digitalWrite(goto_zero_high_pin, HIGH);
+
 }
 
 void blinker(int s){
@@ -570,6 +589,7 @@ void sine(double frequency, int steps, double voltage_per_second){
 
     //Steps to new DC
     double target_dc[] = {0,0,0,0};
+    int is_port_updating[] = {0,0,0,0};
     
     //Online updates
     String update, command;
@@ -619,8 +639,11 @@ void sine(double frequency, int steps, double voltage_per_second){
           if (command == "DC") {
             if (abs(update.toFloat())+ abs(amp[port]) <= 10){
               target_dc[port] = update.toFloat();
-              String temp_str = "P," + String(port)+",DC,"+String(target_dc[port]);
-              write_to_display(temp_str);
+              if (target_dc[port] != mid[port]){
+                  is_port_updating[port] = 1;
+                  String temp_str = "P," + String(port)+",DC,"+String(target_dc[port]);
+                  write_to_display(temp_str);
+              } 
             }
 
           } else if (command == "AC"){
@@ -667,6 +690,20 @@ void sine(double frequency, int steps, double voltage_per_second){
         
         }
       
+      if (digitalRead(goto_zero_input_pin) == HIGH){  
+        for (int i = 0; i< NUMBER_OF_PORTS; i++){
+          if (target_dc[i] != 0){
+                is_port_updating[i] = 1;
+                target_dc[i] = 0;
+                String temp_str = "P," + String(i)+",DC,0";
+                        write_to_display(temp_str);
+             } else if (amp[i] != 0){
+              amp[i] = 0;
+              String temp_str = "P," + String(i)+",AC,0";
+              write_to_display(temp_str);
+             }
+        }
+      }
       
       
       //Applying sine Current
@@ -685,6 +722,11 @@ void sine(double frequency, int steps, double voltage_per_second){
           }
         } else {
           mid[i] = target_dc[i];
+          if (is_port_updating[i]){
+            is_port_updating[i] = 0;
+            String temp_str = "P," + String(i)+",DN,"+String(mid[i]);
+            write_to_display(temp_str);
+          }
         }
         curr_value = sine_value*amp[i] + mid[i]; 
         if (curr_value != prev_value[i]){
@@ -817,8 +859,6 @@ void fast_read(int port, int length, int delay){
   Serial.println("FAST_READ_FINISHED");
 
 }
-
-
 
 void router(std::vector<String> DB)
 {
