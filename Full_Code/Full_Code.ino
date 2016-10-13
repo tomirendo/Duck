@@ -6,7 +6,8 @@
 #include "math.h"
 #include <Wire.h>
 
-//#include "WaveTable.hpp"
+//Setup
+#define has_display 0 
 
 #define SECONDS_IN_MILISECOND 0.001
 #define MILISECONDS_IN_SECOND 1000
@@ -80,10 +81,12 @@ void debug()
 }
 
 void restart_display(){
-  pinMode(18, OUTPUT);
-  digitalWrite(18, LOW);
-  delay(10);
-  digitalWrite(18, HIGH);
+  if (has_display){
+    pinMode(18, OUTPUT);
+    digitalWrite(18, LOW);
+    delay(10);
+    digitalWrite(18, HIGH);
+  }
 }
 
 void setup()
@@ -125,7 +128,9 @@ void setup()
   restart_display();
 
   //Display I2C communication
-  Wire.begin();
+  if (has_display){
+     Wire.begin();
+  } 
 
   //Set goto zero pins
   pinMode(goto_zero_high_pin, OUTPUT);
@@ -555,11 +560,13 @@ double radian_per_step(int steps){
   return 2*3.1415926 / steps;
 }
 void write_to_display(String s){
-  Wire.beginTransmission(8);
-  char buffer[100];
-  (s+"\r").toCharArray(buffer, 100);
-  Wire.write(buffer);
-  Wire.endTransmission();
+  if (has_display){
+    Wire.beginTransmission(8);
+    char buffer[100];
+    (s+"\r").toCharArray(buffer, 100);
+    Wire.write(buffer);
+    Wire.endTransmission();
+  }
 }
 void update_display_with_sine(double freq, int steps, double v_p_s){
 
@@ -696,7 +703,7 @@ void sine(double frequency, int steps, double voltage_per_second){
                 is_port_updating[i] = 1;
                 target_dc[i] = 0;
                 String temp_str = "P," + String(i)+",DC,0";
-                        write_to_display(temp_str);
+                write_to_display(temp_str);
              } else if (amp[i] != 0){
               amp[i] = 0;
               String temp_str = "P," + String(i)+",AC,0";
