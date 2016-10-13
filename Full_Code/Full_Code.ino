@@ -8,6 +8,7 @@
 
 //Setup
 #define has_display 0 
+#define has_restart_button 0
 
 #define SECONDS_IN_MILISECOND 0.001
 #define MILISECONDS_IN_SECOND 1000
@@ -574,6 +575,11 @@ void update_display_with_sine(double freq, int steps, double v_p_s){
          String(v_p_s);
   write_to_display(temp_str);
 }
+
+int should_restart(){
+    return (has_restart_button &&  (digitalRead(goto_zero_input_pin) == HIGH))
+}
+
 void sine(double frequency, int steps, double voltage_per_second){
     //Yotam
     //Runs sine function with initial amplitude and DC current (mid).
@@ -696,8 +702,8 @@ void sine(double frequency, int steps, double voltage_per_second){
           }
         
         }
-      
-      if (digitalRead(goto_zero_input_pin) == HIGH){  
+     
+      if ( should_restart() ){
         for (int i = 0; i< NUMBER_OF_PORTS; i++){
           if (target_dc[i] != 0){
                 is_port_updating[i] = 1;
