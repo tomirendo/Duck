@@ -244,7 +244,7 @@ void writeADCConversionTime(std::vector<String> DB)
   cr=SPI.transfer(adc,0); //Read back the CT register
 
   int convtime = ((int)(((cr&127)*128+249)/6.144)+0.5);
-  Serial.println(convtime);
+  //Serial.println(convtime);
 }
 
 
@@ -579,6 +579,20 @@ void update_display_with_sine(double freq, int steps, double v_p_s){
 int should_restart(){
     return (has_restart_button &&  (digitalRead(goto_zero_input_pin) == HIGH));
 }
+void update_conversion_time_for_all_ports(int waiting_time){
+  int conversion_time = waiting_time/2;
+  if (conversion_time < 82){
+    conversion_time = 82;
+  }
+  std::vector<String> v;
+  v.push_back("");
+  v.push_back("0");
+  v.push_back(String(conversion_time));
+  for (int i = 0 ; i < NUMBER_OF_PORTS; i++){
+    v[1] = String(i);
+    writeADCConversionTime(v);
+  } 
+}
 
 void sine(double frequency, int steps, double voltage_per_second){
     //Yotam
@@ -592,6 +606,7 @@ void sine(double frequency, int steps, double voltage_per_second){
     int waiting_time = wait_time(steps, frequency);
     double real_freq = round_freq(steps, waiting_time);
     double single_step_rad = radian_per_step(steps);
+    update_conversion_time_for_all_ports(waiting_time);
 
     Serial.print("Sine with read is running real freq : ");
     Serial.println(real_freq);
@@ -690,14 +705,16 @@ void sine(double frequency, int steps, double voltage_per_second){
               write_to_display(String("D,1"));
               //This is a bug, the command should be 'D' without anything else. 
               return ; 
-          } else if (update.startsWith("ADC,")){
+          } else if (update.startsWith("GET_ADC,")){
             /*
               WASNT TESTED
               Returns Reads DC and return the value through the Serial port.
             */
             std::vector<String> v;
-            v = split_string_by_comma(update.substring(4));
-            readADC(v[0].toInt());
+            v = split_string_by_comma(update);
+            //Serial.println(v[1]);
+            //readADC(1);
+            readADC(v[1].toInt());
 
           }
         
